@@ -1,8 +1,8 @@
 module variables
 !Network parameters 
-	integer,parameter::  NeuronN= 20000 !=N=Number of Neurons= Network size
+	integer,parameter::  N= 20000 !=Number of Neurons= Network size
 	integer,parameter:: Avg_degree=10 !=<k>
-	integer,parameter:: Nbonds=NeuronN*Avg_degree/2
+	integer,parameter:: Nbonds=N*Avg_degree/2
 !Time Parameters
 	integer,parameter:: n_s=50000    
 	integer,parameter::     MeassTime=0.9*n_s
@@ -14,15 +14,15 @@ module variables
 !Threshold Variables
 	real(8)::  T  ! Threshold T
 	real(8),parameter::  Delta_T=0.005 ! Threshold Change
-	real(8),parameter:: T_0=0.15
-	real(8),parameter:: T_F=0.65
+	real(8),parameter:: T_0=0.00
+	real(8),parameter:: T_F=0.3
 !Neuron States and  Neighbor lists
-	integer S(1:NeuronN) !Neuron State
-	integer S_prev(1:NeuronN) !Previous Neuron State
+	integer S(1:N) !Neuron State
+	integer S_prev(1:N) !Previous Neuron State
 	integer,parameter:: x1=5*Avg_degree
-	integer,dimension(NeuronN):: MyNeighbors=0 ! MyNeighbors(i) = Ammount of neighbors of i
-	integer,dimension(NeuronN,x1):: NeighborN=0 ! NeighborN(i,k)= identity of the k-tjh neighbor of i
-	real(8),dimension(NeuronN,x1):: Wij=0 ! Wij(i,k)= weight of the k-tjh connetcion of i, i.e., the conection with  NeighborN(i,k)
+	integer,dimension(N):: MyNeighbors=0 ! MyNeighbors(i) = Ammount of neighbors of i
+	integer,dimension(N,x1):: NeighborMat=0 ! NeighborMat(i,k)= identity of the k-tjh neighbor of i
+	real(8),dimension(N,x1):: Wij=0 ! Wij(i,k)= weight of the k-tjh connetcion of i, i.e., the conection with  NeighborMat(i,k)
 	real(8)::weight    
 !OBSERVABLES		
 	integer:: activity,prev_activity
@@ -45,17 +45,17 @@ read(99,*) i,j
 p=rand(); weight=-log(p)/lambda
 
 MyNeighbors(i)=MyNeighbors(i)+1
-NeighborN(i,MyNeighbors(i))=j
+NeighborMat(i,MyNeighbors(i))=j
 Wij(i,MyNeighbors(i))=weight
 				
 MyNeighbors(j)=MyNeighbors(j)+1
-NeighborN(j,MyNeighbors(j))=i
+NeighborMat(j,MyNeighbors(j))=i
 Wij(j,MyNeighbors(j))=weight				
 enddo	    
 close(99)
 
 !Random Initial Condition
-do i=1,NeuronN;	p=rand(); S(i)= int(p*3); enddo
+do i=1,N;	p=rand(); S(i)= int(p*3); enddo
 ! RUN
 
 
@@ -99,8 +99,8 @@ avgact=avgact/real(measstime)
 avgact2=avgact2/real(measstime)
 AvgActPrev=AvgActPrev/real(measstime)
 
-f_s= avgact/real(NeuronN)
-varf_s= real(avgact2-avgact**2)/real(NeuronN)**2
+f_s= avgact/real(N)
+varf_s= real(avgact2-avgact**2)/real(N)**2
 AC1= real((AvgActPrev-avgact**2)/(avgact2-avgact**2))
 
 write(101,*) real(T ),f_s, varf_s, AC1
@@ -116,7 +116,7 @@ real(8) sum_transmit
 
 S_prev=S
 Activity=0
-do i=1,NeuronN
+do i=1,N
 !Previously active -> Refractory Always
 	if (S_prev(i).eq.1) then; S(i)=2  ; endif
 !Refractary becomes Quiescent with probability r_2       
@@ -136,7 +136,7 @@ do i=1,NeuronN
 ! Transmitted activation
 		sum_transmit=0; 
 		do k=1,MyNeighbors(i)
-			j=NeighborN(i,k)
+			j=NeighborMat(i,k)
 			if (S_prev(j)==1) sum_transmit=sum_transmit+Wij(i,k)
 		end do           
 		if(sum_transmit > T ) S(i)=1
