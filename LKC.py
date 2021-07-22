@@ -9,7 +9,7 @@ a1 = datetime.datetime.now()
 
 #Parameters
 N = 5000  #Neurons
-Avg_degree = 30    #Connectivity
+Avg_degree = 10    #Connectivity
 pi = 0.6  #Rewiring probability 
 r1 = 0.001 # Spontaneous neuron activation
 n_s =1000 #time steps
