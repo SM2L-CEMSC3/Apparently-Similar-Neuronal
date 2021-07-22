@@ -11,7 +11,7 @@ a1 = datetime.datetime.now()
 
 #Parameters
 N = 5000   # Neurons
-Avg_degree = 30   # Conectivity
+Avg_degree = 10   # Conectivity
 pi = 0.6   # rewiring probability
 r1 = 0.001 # the spontaneous neuron activation frequency
 
